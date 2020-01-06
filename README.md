@@ -27,5 +27,5 @@ make
 
 Convert the `.rawls` image format into `.ppm` 
 ```
-./rawls/rawls_reader --image ../path/to/image.rawls_20 --outfile image.ppm
+./main/rawls_reader --image ../path/to/image.rawls --outfile image.ppm
 ```
