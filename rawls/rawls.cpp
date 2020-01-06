@@ -120,6 +120,57 @@ bool rawls::saveAsPNG(unsigned width, unsigned height, unsigned nbChanels, float
 }
 
 
+bool rawls::saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, std::string comments, float* buffer, std::string outfileName){
+    
+    std::ofstream outfile(outfileName, std::ios::out | std::ios::binary);
+
+    outfile << "IHDR" << std::endl;
+    outfile << ((sizeof(width) + sizeof(height) + sizeof(nbChanels)))  << std::endl;
+    outfile.write((char *) &width, sizeof(width));
+    outfile << " ";
+    outfile.write((char *) &height, sizeof(height));
+    outfile << " ";
+    outfile.write((char *) &nbChanels, sizeof(nbChanels));
+    outfile << std::endl;
+
+    // Part 2
+    // Comments (usefull information about scene and generation data used)
+    outfile << "COMMENTS" << std::endl;
+    outfile << comments;
+    
+    // Part 3
+    // using data information write specific chunck
+    outfile << "DATA" << std::endl;
+    outfile << (sizeof(float) * nbChanels * width * height) << std::endl;
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            float pixel[3];
+
+            pixel[0] = buffer[3 * (y * width + x) + 0];
+            pixel[1] = buffer[3 * (y * width + x) + 1];
+            pixel[2] = buffer[3 * (y * width + x) + 2];
+            
+            outfile.write((char *) &pixel[0], sizeof(pixel[0]));
+            outfile.write((char *) &pixel[1], sizeof(pixel[1]));
+            outfile.write((char *) &pixel[2], sizeof(pixel[2]));
+            outfile << std::endl;
+        }
+    }
+
+    outfile.close();
+    
+    if(!outfile.good()) {
+        std::cout << "Error occurred at writing time!" << std::endl;
+        return false;
+    }
+
+    std::cout << "Image is now saved as .rawls into " << outfileName << std::endl;
+
+    return true;
+}
+
+
 float* rawls::getPixelsRAWLS(std::string filename){
 
     // get dimensions information from image
@@ -294,4 +345,47 @@ std::tuple<unsigned, unsigned, unsigned, float*> rawls::getDataRAWLS(std::string
     }
 
     return std::make_tuple(width, height, nbChanels, buffer);
+}
+
+std::string rawls::getCommentsRAWLS(std::string filename){
+
+    std::string comments;
+
+    // only one read buffer used for the whole function
+    std::ifstream rf(filename, std::ios::out | std::ios::binary);
+
+    if(!rf) {
+      std::cout << "Cannot open file!" << std::endl;
+    }
+
+    std::string line; 
+    unsigned nbChanels, width, height;
+    char c; // to get space of new line char
+
+    // READ IHDR info
+    bool commentsBegin = false;
+
+    while (!commentsBegin && std::getline(rf, line)) { 
+
+        if (line.find(std::string("COMMENTS")) != std::string::npos){
+            commentsBegin = true;
+        }
+    }
+
+    bool dataBegin = false;
+
+    // READ DATA info
+    // case of data chunck begin
+    while (!dataBegin && std::getline(rf, line)) { 
+
+        if (line.find(std::string("DATA")) != std::string::npos){
+            dataBegin = true;
+        }
+        else
+        {
+            comments = comments + line + '\n';
+        }
+    }
+
+    return comments;
 }

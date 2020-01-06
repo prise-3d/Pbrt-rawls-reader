@@ -25,7 +25,15 @@ cd build && cmake ..
 make 
 ```
 
+### Examples:
+
 Convert the `.rawls` image format into `.ppm` 
 ```
 ./main/rawls_reader --image ../path/to/image.rawls --outfile image.ppm
+```
+
+
+Merge `.rawls` images samples
+```
+./main/rawls_merge --folder ../path/to/images --samples 100 --random 0 --outfile image.png
 ```

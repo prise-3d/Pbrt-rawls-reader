@@ -47,12 +47,19 @@ bool saveAsPPM(unsigned width, unsigned height, unsigned nbChanels, float* buffe
 
 bool saveAsPNG(unsigned width, unsigned height, unsigned nbChanels, float* buffer, std::string outfileName);
 
+bool saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, std::string comments, float* buffer, std::string outfileName);
+
 /*
  * Read `.rawls` image and fill buffer pass as parameter
  *
  * `float*` is pointer to data buffer and needed to be deleted
  */
 float* getPixelsRAWLS(std::string filename);
+
+/*
+ * Returns comments from `.rawls` format
+ */
+std::string getCommentsRAWLS(std::string filename);
 
 /*
  * Returns tuple with <width, height, channels> information of image

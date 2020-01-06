@@ -10,7 +10,7 @@
 
 
 void writeProgress(float progress){
-    int barWidth = 70;
+    int barWidth = 200;
 
     std::cout << "[";
     int pos = barWidth * progress;
@@ -44,8 +44,12 @@ int main(int argc, char *argv[]){
 
     std::vector<std::string> imagesPath;
 
-    for (const auto & entry : std::filesystem::directory_iterator(folderName))
-        imagesPath.push_back(entry.path().string());
+    for (const auto & entry : std::filesystem::directory_iterator(folderName)){
+        std::string imageName = entry.path().string();
+        if (rawls::HasExtension(imageName, ".rawls") || rawls::HasExtension(imageName, ".rawls_20")){
+            imagesPath.push_back(imageName);
+        }
+    }
 
     // sort or shuffle the images path
     if (!random){
@@ -53,7 +57,7 @@ int main(int argc, char *argv[]){
     }else{
         std::random_shuffle(imagesPath.begin(), imagesPath.end());
     }
-    
+
     // check nSamples
     if (nbSamples > imagesPath.size()){
         nbSamples = imagesPath.size();
@@ -110,7 +114,8 @@ int main(int argc, char *argv[]){
 
         delete buffer;
     }
-        
+    
+    writeProgress(1.);
     std::cout << std::endl;
 
     // mean all samples values by number of samples used
@@ -125,10 +130,12 @@ int main(int argc, char *argv[]){
     else if (rawls::HasExtension(outfileName, ".png")){
         rawls::saveAsPNG(width, height, nbChanels, outputBuffer, outfileName);
     } 
-    else if (rawls::HasExtension(outfileName, ".rawls")){
-        // TODO
-        //rawls::saveAsPNG(width, height, nbChanels, outputBuffer, outfileName);
-        std::cout << "Saved as rawls is not yet implemented" << std::endl;
+    else if (rawls::HasExtension(outfileName, ".rawls") || rawls::HasExtension(outfileName, ".rawls_20")){
+        // need to get comments from an image
+        std::string comments = rawls::getCommentsRAWLS(imagesPath.at(0));
+
+        // Here no gamma conversion is done, only mean of samples
+        rawls::saveAsRAWLS(width, height, nbChanels, comments, outputBuffer, outfileName);
     } 
     else{
         std::cout << "Unexpected output extension image" << std::endl;
