@@ -1,0 +1,2 @@
+add_executable(rawls_reader rawls_reader.cpp)
+add_executable(rawls_h_flip rawls_h_flip.cpp)
