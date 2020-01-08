@@ -1,2 +1,5 @@
-add_executable(rawls_reader rawls_reader.cpp)
-add_executable(rawls_h_flip rawls_h_flip.cpp)
+add_library(rawls rawls.h rawls.cpp)
+
+target_link_libraries(rawls LINK_PUBLIC lodepng)
+
+target_include_directories (rawls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
