@@ -1,11 +1,6 @@
 #include <stdio.h>
-#include <string.h>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <math.h>
 
-#include <bitset>
+#include "rawls.h"
 
 int main(int argc, char *argv[]){
 
@@ -21,102 +16,50 @@ int main(int argc, char *argv[]){
     }
     
 
-    std::cout << "Read image `" << imageName << "` and save it into " << outfileName << std::endl;
+    // extract data from image
+    unsigned width, height, nbChanels;
+    float* buffer;
+    float* outputBuffer;
 
-    std::ifstream rf(imageName, std::ios::out | std::ios::binary);
+    std::tuple<unsigned, unsigned, unsigned, float*> data = rawls::getDataRAWLS(imageName);
 
-    if(!rf) {
-      std::cout << "Cannot open file!" << std::endl;
-      return 1;
-    }
+    width = std::get<0>(data);
+    height = std::get<1>(data);
+    nbChanels = std::get<2>(data);
+    buffer = std::get<3>(data);
 
+    outputBuffer = new float[width * height * nbChanels];
 
-    std::string line; 
-    int nbChanels, width, height;
-    char c; // to get space of new line char
+    
+    for(unsigned y = 0; y < height; y++){
 
-    // READ IHDR info
-    bool ihdrBegin = false;
+        for(unsigned x = 0; x < width; x++) {
 
-    while (!ihdrBegin && std::getline(rf, line)) { 
+            unsigned reversedWidth = width - x;
 
-        if (line.find(std::string("IHDR")) != std::string::npos){
-            ihdrBegin = true;
-            std::getline(rf, line); // avoid data size line
-
-            rf.read((char *) &width, sizeof(int));
-            rf.get(c);
-            rf.read((char *) &height, sizeof(int));
-            rf.get(c);
-            rf.read((char *) &nbChanels, sizeof(int));
-            rf.get(c);
-        }
-    }
-
-  
-    bool dataBegin = false;
-
-
-    // READ DATA info
-    // case of data chunck begin
-    while (!dataBegin && std::getline(rf, line)) { 
-        
-        if (line.find(std::string("DATA")) != std::string::npos){
-            dataBegin = true;
-        }
-    }
-
-    std::getline(rf, line);
-
-    int size = std::stoi(line);
-
-
-    // compute number of pixels into image
-    int nbPixels = (size / (nbChanels * 4));
-
-
-    // create outfile 
-    // now write image as .ppm
-    std::ofstream outfile(outfileName);
-
-    outfile << "P" << nbChanels << std::endl;
-    outfile << width << " " << height << std::endl;
-    outfile << "255" << std::endl;
-
-
-    for (int i = 0; i < height; i++){
-
-        float widthValues[width][nbChanels];
-
-        for (int j = 0; j < width; j++){
-
-             // for each chanel read and keep save float value into new file
-            for(int k = 0; k < nbChanels; k++){
-                rf.read((char *) &widthValues[j][k], sizeof(float));  
-            } 
-
-            // go to next line
-            rf.get(c);
-        }
-
-        for (int j = width; j > 0; j--){
-            
-            for(int k = 0; k < nbChanels; k++){
-                outfile << int(widthValues[j][k]) << " "; 
+            for(unsigned j = 0; j < nbChanels; j++){
+                
+                float value = buffer[nbChanels * width * y + nbChanels * reversedWidth + j];
+                outputBuffer[nbChanels * width * y + nbChanels * x + j] = value;
             }
         }
-
-        outfile << std::endl;
     }
 
-    rf.close();
+    // create outfile 
+    if (rawls::HasExtension(outfileName, ".ppm")){
+        rawls::saveAsPPM(width, height, nbChanels, outputBuffer, outfileName);
+    } 
+    else if (rawls::HasExtension(outfileName, ".png")){
+        rawls::saveAsPNG(width, height, nbChanels, outputBuffer, outfileName);
+    } 
+    else if (rawls::HasExtension(outfileName, ".rawls") || rawls::HasExtension(outfileName, ".rawls_20")){
+        // need to get comments from an image
+        std::string comments = rawls::getCommentsRAWLS(imageName);
 
-    if(!rf.good()) {
-        std::cout << "Error occurred at reading time!" << std::endl;
-        return 1;
+        // Here no gamma conversion is done, only mean of samples
+        rawls::saveAsRAWLS(width, height, nbChanels, comments, outputBuffer, outfileName);
+    } 
+    else{
+        std::cout << "Unexpected output extension image" << std::endl;
     }
-
-    std::cout << "Image is now flipped and saved as .ppm into " << outfileName << std::endl;
-
-    outfile.close();
 }

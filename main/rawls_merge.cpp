@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
 
             for(unsigned x = 0; x < width; x++) {
 
-                for(int j = 0; j < nbChanels; j++){
+                for(unsigned j = 0; j < nbChanels; j++){
                     
                     float value = buffer[nbChanels * width * y + nbChanels * x + j];
                     outputBuffer[nbChanels * width * y + nbChanels * x + j] = outputBuffer[nbChanels * width * y + nbChanels * x + j] + value;
