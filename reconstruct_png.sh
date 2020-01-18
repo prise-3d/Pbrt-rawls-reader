@@ -44,23 +44,7 @@ do
     
     mkdir -p $output_scene_path_fixed
 
-    samples=$step
-
-    while [ $samples -le ${nb_elements} ]
-    do
-      suffix=$samples
-
-      while [ ${#suffix} -le 5 ]
-      do
-        suffix="0"${suffix}
-      done
-
-      # need to create `outfile` name
-      outfile="${folder}_${suffix}.png"
-      echo "$folder: [merge of ${samples} samples] into ${outfile}"
-
-      ./${build_folder}/main/rawls_merge --folder ${folder_path} --samples ${samples} --random 0 --outfile ${output_scene_path_fixed}/${outfile}
-      samples=$(( $samples + $step ))
-    done
+    ./${build_folder}/main/rawls_merge_incr --folder ${folder_path} --output $output_scene_path_fixed --step ${step} --random 0 --prefix ${folder} --max ${nb_elements} --extension ".png"
+      
   fi
 done
