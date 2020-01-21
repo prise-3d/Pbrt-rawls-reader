@@ -7,9 +7,16 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <regex>
 
-void writeProgress(float progress){
+void writeProgress(float progress, bool moveUp = false){
     int barWidth = 200;
+
+    if (moveUp){
+        // move up line
+        std::cout << "\e[A";
+        std::cout.flush();
+    }
 
     std::cout << "[";
     int pos = barWidth * progress;
@@ -22,10 +29,48 @@ void writeProgress(float progress){
     std::cout.flush();
 }
 
+void insertSorted(unsigned size, float* values, float value){
+
+    // avoid use of:
+    //std::sort(values, values + size, std::greater<float>());
+
+    unsigned position = 0;
+
+    // find expected position value
+    for (int i = 0; i < size; i++){
+
+        if(value <= values[i]){
+            break; // position found go out of the loop
+        }
+        position = i + 1;
+    }
+
+    // shift all values to right by one
+    for (int i = (size + 1) ; i > position; i--){        
+        values[i] = values[i - 1];
+    }
+
+    // insert new value into found position (now free)
+    values[position] = value;
+
+}
+
+float getMedianValue(unsigned size, float* values){
+
+    if (size % 2 == 0)
+    {
+      return (values[size / 2 - 1] + values[size / 2]) / 2;
+    }
+    else 
+    {
+      return values[size / 2];
+    }
+}
+
 /*
  * Save current step images from current buffer
  */
-bool saveCurrentImage(int width, int height, int nbChanels, float* buffer, std::string outfileName){
+bool saveCurrentImage(int width, int height, int nbChanels, float* buffer, std::string outfileName, std::string comments){
     
     // create outfile 
     if (rawls::HasExtension(outfileName, ".ppm")){
@@ -34,15 +79,11 @@ bool saveCurrentImage(int width, int height, int nbChanels, float* buffer, std::
     else if (rawls::HasExtension(outfileName, ".png")){
         rawls::saveAsPNG(width, height, nbChanels, buffer, outfileName);
     } 
-
-    // TODO : add this option
-    /*else if (rawls::HasExtension(outfileName, ".rawls") || rawls::HasExtension(outfileName, ".rawls_20")){
-        // need to get comments from an image
-        std::string comments = rawls::getCommentsRAWLS(imagesPath.at(0));
-
+    else if (rawls::HasExtension(outfileName, ".rawls") || rawls::HasExtension(outfileName, ".rawls_20")){
+    
         // Here no gamma conversion is done, only mean of samples
         rawls::saveAsRAWLS(width, height, nbChanels, comments, buffer, outfileName);
-    }*/
+    }
     else{
         std::cout << "Unexpected output extension image" << std::endl;
         return false;
@@ -102,7 +143,7 @@ int main(int argc, char *argv[]){
 
     unsigned width, height, nbChanels;
     float* outputStepBuffer;
-    float* outputBuffer;
+    float** outputBuffer;
 
     if (imagesPath.size() > 0){
 
@@ -111,12 +152,12 @@ int main(int argc, char *argv[]){
         width = std::get<0>(dimensions);
         height = std::get<1>(dimensions);
         nbChanels = std::get<2>(dimensions);
-        outputBuffer = new float[width * height * nbChanels];
+        outputBuffer = new float*[width * height * nbChanels];
         outputStepBuffer = new float[width * height * nbChanels];
 
         // init values of buffer
         for (int i = 0; i < height * width * nbChanels; i++){
-            outputBuffer[i] = 0;
+            outputBuffer[i] = new float[maxSamples];
             outputStepBuffer[i] = 0;
         }
     }
@@ -129,8 +170,16 @@ int main(int argc, char *argv[]){
     // just for indication
     float progress = 0.0;
     unsigned bufferSize = width * height * nbChanels;
+    std::string comments;
+
+    // get comments if output is also `rawls` file
+    if (rawls::HasExtension(imageExtension, "rawls")){
+        comments = rawls::getCommentsRAWLS(imagesPath.at(0));
+    }
 
     for (unsigned i = 1; i < maxSamples; i++){
+
+        unsigned currentSample = i - 1;
 
         // read into folder all `.rawls` file and merge pixels values
         float* buffer = rawls::getPixelsRAWLS(imagesPath.at(i));
@@ -142,16 +191,19 @@ int main(int argc, char *argv[]){
                 for(unsigned j = 0; j < nbChanels; j++){
                     
                     float value = buffer[nbChanels * width * y + nbChanels * x + j];
-                    outputBuffer[nbChanels * width * y + nbChanels * x + j] = outputBuffer[nbChanels * width * y + nbChanels * x + j] + value;
+
+                    insertSorted(currentSample, outputBuffer[nbChanels * width * y + nbChanels * x + j], value);
                 }
             }
         }
 
         // save a new 
         if (i % step == 0){
-             // mean all samples values by number of samples used
+
+             // get median all samples values by number of samples used
             for (int j = 0; j < height * width * nbChanels; j++){
-                outputStepBuffer[j] = outputBuffer[j] / i;
+                
+                outputStepBuffer[j] = getMedianValue((i), outputBuffer[j]);
             }
 
             std::string suffix = std::to_string(i);
@@ -160,15 +212,17 @@ int main(int argc, char *argv[]){
                 suffix = "0" + suffix;
             }
 
-            // TODO : build outfileName
             std::string outfileName = outputFolder + "/" + prefixImageName + "_" + suffix + "." + imageExtension;
+            // fix path 
+            outfileName = std::regex_replace(outfileName, std::regex("\\//"), "/");
 
-            saveCurrentImage(width, height, nbChanels, outputStepBuffer, outfileName);
-            writeProgress(progress);
+            saveCurrentImage(width, height, nbChanels, outputStepBuffer, outfileName, comments);
+            writeProgress(progress, true);
         }
 
         // update and write progress information
         progress += (1 / (float)maxSamples);
+        writeProgress(progress);
 
         delete buffer;
     }
@@ -177,6 +231,10 @@ int main(int argc, char *argv[]){
     std::cout << std::endl;
 
     // delete the outputbuffer used
-    delete outputBuffer;
+    for (int j = 0; j < height * width * nbChanels; j++){
+        delete[] outputBuffer[j];
+    }
+
+    delete[] outputBuffer;
     delete outputStepBuffer;
 }
