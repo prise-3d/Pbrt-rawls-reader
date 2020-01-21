@@ -44,7 +44,7 @@ do
     
     mkdir -p $output_scene_path_fixed
 
-    ./${build_folder}/main/rawls_merge_incr --folder ${folder_path} --output $output_scene_path_fixed --step ${step} --random 0 --prefix ${folder} --max ${nb_elements} --extension ".png"
+    ./${build_folder}/main/rawls_merge_mean_incr --folder ${folder_path} --output $output_scene_path_fixed --step ${step} --random 0 --prefix ${folder} --max ${nb_elements} --extension "png"
       
   fi
 done
