@@ -46,7 +46,7 @@ void insertSorted(unsigned size, float* values, float value){
     }
 
     // shift all values to right by one
-    for (int i = (size + 1) ; i > position; i--){        
+    for (int i = size; i > position; i--){        
         values[i] = values[i - 1];
     }
 
@@ -177,9 +177,9 @@ int main(int argc, char *argv[]){
         comments = rawls::getCommentsRAWLS(imagesPath.at(0));
     }
 
-    for (unsigned i = 1; i < maxSamples; i++){
+    for (unsigned i = 0; i < maxSamples; i++){
 
-        unsigned currentSample = i - 1;
+        unsigned currentSample = i + 1;
 
         // read into folder all `.rawls` file and merge pixels values
         float* buffer = rawls::getPixelsRAWLS(imagesPath.at(i));
@@ -192,30 +192,32 @@ int main(int argc, char *argv[]){
                     
                     float value = buffer[nbChanels * width * y + nbChanels * x + j];
 
-                    insertSorted(currentSample, outputBuffer[nbChanels * width * y + nbChanels * x + j], value);
+                    insertSorted(i, outputBuffer[nbChanels * width * y + nbChanels * x + j], value);
                 }
             }
         }
 
         // save a new 
-        if (i % step == 0){
+        if (currentSample % step == 0){
 
              // get median all samples values by number of samples used
             for (int j = 0; j < height * width * nbChanels; j++){
                 
-                outputStepBuffer[j] = getMedianValue((i), outputBuffer[j]);
+                outputStepBuffer[j] = getMedianValue(currentSample, outputBuffer[j]);
             }
-
-            std::string suffix = std::to_string(i);
-
+            
+            // add suffix with `5` digits
+            std::string suffix = std::to_string(currentSample);
+            
             while(suffix.length() < 5){
                 suffix = "0" + suffix;
             }
 
+            // build output path of image
             std::string outfileName = outputFolder + "/" + prefixImageName + "_" + suffix + "." + imageExtension;
-            // fix path 
-            outfileName = std::regex_replace(outfileName, std::regex("\\//"), "/");
+            outfileName = std::regex_replace(outfileName, std::regex("\\//"), "/"); // fix path 
 
+            // save the expected `step` image using built outpath
             saveCurrentImage(width, height, nbChanels, outputStepBuffer, outfileName, comments);
             writeProgress(progress, true);
         }

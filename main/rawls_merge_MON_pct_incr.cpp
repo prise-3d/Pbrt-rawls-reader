@@ -29,6 +29,43 @@ void writeProgress(float progress, bool moveUp = false){
     std::cout.flush();
 }
 
+void insertSorted(unsigned size, float* values, float value){
+
+    // avoid use of:
+    //std::sort(values, values + size, std::greater<float>());
+    unsigned position = 0;
+
+    // find expected position value
+    for (int i = 0; i < size; i++){
+
+        if(value <= values[i]){
+            break; // position found go out of the loop
+        }
+        position = i + 1;
+    }
+
+    // shift all values to right by one
+    for (int i = size ; i > position; i--){        
+        values[i] = values[i - 1];
+    }
+
+    // insert new value into found position (now free)
+    values[position] = value;
+
+}
+
+float getMedianValue(unsigned size, float* values){
+
+    if (size % 2 == 0)
+    {
+      return (values[size / 2 - 1] + values[size / 2]) / 2;
+    }
+    else 
+    {
+      return values[size / 2];
+    }
+}
+
 /*
  * Save current step images from current buffer
  */
@@ -55,7 +92,7 @@ bool saveCurrentImage(int width, int height, int nbChanels, float* buffer, std::
 }
 
 /*
- * Incremental merge of `rawls` images
+ * Incremental merge of `rawls` images using `median-of-means`
  */
 int main(int argc, char *argv[]){
 
@@ -103,8 +140,10 @@ int main(int argc, char *argv[]){
     }
 
     unsigned width, height, nbChanels;
-    float* outputStepBuffer;
-    float* outputBuffer;
+
+    float** outputMeanBuffer; // stores means array for each sample
+    float* outputStepBuffer; // buffer which stores kept median for each generated image (median is found using `outputMeanBuffer`)
+    float* outputSumBuffer; // buffer which stores sum of new computed mean for each sample (then new mean is added to `outputMeanBuffer`)
 
     if (imagesPath.size() > 0){
 
@@ -113,12 +152,17 @@ int main(int argc, char *argv[]){
         width = std::get<0>(dimensions);
         height = std::get<1>(dimensions);
         nbChanels = std::get<2>(dimensions);
-        outputBuffer = new float[width * height * nbChanels];
+
+        // init all pointers size
+        outputMeanBuffer = new float*[width * height * nbChanels];
+        outputSumBuffer = new float[width * height * nbChanels];
         outputStepBuffer = new float[width * height * nbChanels];
 
         // init values of buffer
         for (int i = 0; i < height * width * nbChanels; i++){
-            outputBuffer[i] = 0;
+            // set as default size `maxSamples` by `step`
+            outputMeanBuffer[i] = new float[maxSamples / step];
+            outputSumBuffer[i] = 0;
             outputStepBuffer[i] = 0;
         }
     }
@@ -133,6 +177,7 @@ int main(int argc, char *argv[]){
     unsigned bufferSize = width * height * nbChanels;
     std::string comments;
 
+    // get comments if output is also `rawls` file
     if (rawls::HasExtension(imageExtension, "rawls")){
         comments = rawls::getCommentsRAWLS(imagesPath.at(0));
     }
@@ -151,7 +196,9 @@ int main(int argc, char *argv[]){
                 for(unsigned j = 0; j < nbChanels; j++){
                     
                     float value = buffer[nbChanels * width * y + nbChanels * x + j];
-                    outputBuffer[nbChanels * width * y + nbChanels * x + j] +=  value;
+
+                    // add new `luminance` of chanel[j] found
+                    outputSumBuffer[nbChanels * width * y + nbChanels * x + j] += value;
                 }
             }
         }
@@ -159,10 +206,22 @@ int main(int argc, char *argv[]){
         // save a new 
         if (currentSample % step == 0){
 
-             // mean all samples values by number of samples used
+            unsigned nbElementsMean = currentSample / step;
+            float currentMean;
+
+            // get median all samples values by number of samples used (using MON method)
             for (int j = 0; j < height * width * nbChanels; j++){
-                outputStepBuffer[j] = outputBuffer[j] / currentSample;
+
+                // get current mean for new samples luminances found
+                currentMean = outputSumBuffer[j] / step;
+
+                // insert this new mean into buffer (using `nbElementsMean - 1` because the new mean element is now inserted)
+                insertSorted(nbElementsMean - 1, outputMeanBuffer[j], currentMean);
+
+                // get meadian of these means as expected output luminance
+                outputStepBuffer[j] = getMedianValue(nbElementsMean, outputMeanBuffer[j]);
             }
+
 
             // add suffix with `5` digits
             std::string suffix = std::to_string(currentSample);
@@ -177,6 +236,13 @@ int main(int argc, char *argv[]){
 
             // save the expected `step` image using built outpath
             saveCurrentImage(width, height, nbChanels, outputStepBuffer, outfileName, comments);
+            
+            // reinit `sum` buffer in order to get next mean
+            for (int j = 0; j < height * width * nbChanels; j++){
+                outputSumBuffer[j] = 0;
+            }
+
+            // just for progress information with erasing previous info
             writeProgress(progress, true);
         }
 
@@ -190,7 +256,12 @@ int main(int argc, char *argv[]){
     writeProgress(1.);
     std::cout << std::endl;
 
-    // delete the outputbuffer used
-    delete outputBuffer;
+    // clear all pointers memory
+    for (int j = 0; j < height * width * nbChanels; j++){
+        delete[] outputMeanBuffer[j];
+    }
+
+    delete outputMeanBuffer;
+    delete outputSumBuffer;
     delete outputStepBuffer;
 }
