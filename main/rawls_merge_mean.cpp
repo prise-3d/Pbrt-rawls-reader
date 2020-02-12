@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
     std::string folderName;
     std::string outfileName;
     unsigned nbSamples = 10;
+    unsigned startIndex = 0;
     bool random;
 
     for (int i = 1; i < argc; ++i) {
@@ -38,6 +39,8 @@ int main(int argc, char *argv[]){
             random = bool(atoi(argv[++i]));
         }else if (!strcmp(argv[i], "--outfile") || !strcmp(argv[i], "-ouftile")) {
             outfileName = argv[++i];
+        }else if (!strcmp(argv[i], "--startindex") || !strcmp(argv[i], "-startindex")) {
+            startIndex = atoi(argv[++i]);
         }
     }
 
@@ -90,7 +93,7 @@ int main(int argc, char *argv[]){
     float progress = 0.0;
     unsigned bufferSize = width * height * nbChanels;
 
-    for (unsigned i = 0; i < nbSamples; i++){
+    for (unsigned i = startIndex; i < (nbSamples + startIndex); i++){
 
         // read into folder all `.rawls` file and merge pixels values
         float* buffer = rawls::getPixelsRAWLS(imagesPath.at(i));
