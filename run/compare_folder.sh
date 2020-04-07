@@ -25,6 +25,7 @@ markdown_file=$3
 
 
 header_line="# | "
+table_line="---|"
 for image in $(ls ${folder_path}/)
 do
     IFS='.' read -ra ADDR <<< "${image}"
@@ -34,11 +35,13 @@ do
     image_index=${ADDR[-1]}
 
     header_line="${header_line} ${image_index} |"
+    table_line="${table_line}---|"
 done
 
 echo $folder_path > $markdown_file
 echo ""
 echo ${header_line} >> $markdown_file
+echo ${table_line} >> $markdown_file
 
 for image_i in $(ls ${folder_path}/)
 do
@@ -60,4 +63,3 @@ do
 
     echo ${line} >> $markdown_file
 done
-

@@ -40,7 +40,7 @@ startindex=0
 while [ $startindex -lt $nb_elements ]
 do
 
-  outfile="${folder}_${step}_${counter}.png"
+  outfile="${folder}_${step}_${counter}.rawls"
   echo $outfile
 
   ./${build_folder}/main/rawls_merge_mean --folder ${folder_path} --random 0 --samples ${step} --startindex $startindex --outfile $output_folder/$outfile
