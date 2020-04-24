@@ -100,6 +100,9 @@ bool rawls::saveAsPNG(unsigned width, unsigned height, unsigned nbChanels, float
                 float value = buffer[nbChanels * width * y + nbChanels * x + j];
                 image[nbChanelsAlpha * width * y + nbChanelsAlpha * x + j] = int(GammaConvert(value)); 
             } 
+
+            // alpha channel
+            image[nbChanelsAlpha * width * y + nbChanelsAlpha * x + 3] = 255; 
         }
     }
     
