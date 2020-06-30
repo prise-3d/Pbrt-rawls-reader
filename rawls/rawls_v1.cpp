@@ -1,4 +1,4 @@
-#include "rawls.h"
+#include "rawls_v1.h"
 
 #include <fstream>
 #include <memory>
@@ -7,7 +7,7 @@
 /*
  * Read all pixels values from .rawls image file and save as PPM image
  */
-bool rawls::convertToPPM(std::string imageName, std::string outfileName){
+bool rawls_v1::convertToPPM(std::string imageName, std::string outfileName){
 
     // get dimensions and data information from image
     unsigned width, height, nbChanels;
@@ -26,7 +26,7 @@ bool rawls::convertToPPM(std::string imageName, std::string outfileName){
 /*
  * Read all pixels values from .rawls image file and save as PNG image
  */
-bool rawls::convertToPNG(std::string imageName, std::string outfileName){
+bool rawls_v1::convertToPNG(std::string imageName, std::string outfileName){
 
     // get dimensions and data information from image
     unsigned width, height, nbChanels;
@@ -46,7 +46,7 @@ bool rawls::convertToPNG(std::string imageName, std::string outfileName){
 /*
  * Convert buffer using dimensions to PPM image format
  */
-bool rawls::saveAsPPM(unsigned width, unsigned height, unsigned nbChanels, float* buffer, std::string outfileName){
+bool rawls_v1::saveAsPPM(unsigned width, unsigned height, unsigned nbChanels, float* buffer, std::string outfileName){
 
     // open buffer
     std::ofstream outfile(outfileName);
@@ -84,7 +84,7 @@ bool rawls::saveAsPPM(unsigned width, unsigned height, unsigned nbChanels, float
 /*
  * Convert buffer using dimensions to PNG image format
  */
-bool rawls::saveAsPNG(unsigned width, unsigned height, unsigned nbChanels, float* buffer, std::string outfileName){
+bool rawls_v1::saveAsPNG(unsigned width, unsigned height, unsigned nbChanels, float* buffer, std::string outfileName){
 
     // image buffer
     unsigned nbChanelsAlpha = nbChanels + 1;
@@ -120,14 +120,16 @@ bool rawls::saveAsPNG(unsigned width, unsigned height, unsigned nbChanels, float
 }
 
 
-bool rawls::saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, std::string comments, float* buffer, std::string outfileName){
+bool rawls_v1::saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, std::string comments, float* buffer, std::string outfileName){
     
     std::ofstream outfile(outfileName, std::ios::out | std::ios::binary);
 
     outfile << "IHDR" << std::endl;
     outfile << ((sizeof(width) + sizeof(height) + sizeof(nbChanels)))  << std::endl;
     outfile.write((char *) &width, sizeof(width));
+    outfile << " ";
     outfile.write((char *) &height, sizeof(height));
+    outfile << " ";
     outfile.write((char *) &nbChanels, sizeof(nbChanels));
     outfile << std::endl;
 
@@ -152,8 +154,8 @@ bool rawls::saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, std
             outfile.write((char *) &pixel[0], sizeof(pixel[0]));
             outfile.write((char *) &pixel[1], sizeof(pixel[1]));
             outfile.write((char *) &pixel[2], sizeof(pixel[2]));
+            outfile << std::endl;
         }
-        outfile << std::endl;
     }
 
     outfile.close();
@@ -169,7 +171,7 @@ bool rawls::saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, std
 }
 
 
-float* rawls::getPixelsRAWLS(std::string filename){
+float* rawls_v1::getPixelsRAWLS(std::string filename){
 
     // get dimensions information from image
     unsigned width, height, nbChanels;
@@ -216,9 +218,10 @@ float* rawls::getPixelsRAWLS(std::string filename){
                 
                 buffer[nbChanels * width * y + nbChanels * x + j] = chanelValue; 
             } 
+
+            // go to next line
+            rf.get(c);
         }
-        // go to next line
-        rf.get(c);
     }
 
     rf.close();
@@ -231,7 +234,7 @@ float* rawls::getPixelsRAWLS(std::string filename){
 }
 
 
-std::tuple<unsigned, unsigned, unsigned> rawls::getDimensionsRAWLS(std::string filename){
+std::tuple<unsigned, unsigned, unsigned> rawls_v1::getDimensionsRAWLS(std::string filename){
 
     std::ifstream rf(filename, std::ios::out | std::ios::binary);
 
@@ -253,7 +256,9 @@ std::tuple<unsigned, unsigned, unsigned> rawls::getDimensionsRAWLS(std::string f
             std::getline(rf, line); // avoid data size line
 
             rf.read((char *) &width, sizeof(unsigned));
+            rf.get(c);
             rf.read((char *) &height, sizeof(unsigned));
+            rf.get(c);
             rf.read((char *) &nbChanels, sizeof(unsigned));
             rf.get(c);
         }
@@ -269,7 +274,7 @@ std::tuple<unsigned, unsigned, unsigned> rawls::getDimensionsRAWLS(std::string f
 }
 
 
-std::tuple<unsigned, unsigned, unsigned, float*> rawls::getDataRAWLS(std::string filename){
+std::tuple<unsigned, unsigned, unsigned, float*> rawls_v1::getDataRAWLS(std::string filename){
 
     // only one read buffer used for the whole function
     std::ifstream rf(filename, std::ios::out | std::ios::binary);
@@ -342,7 +347,7 @@ std::tuple<unsigned, unsigned, unsigned, float*> rawls::getDataRAWLS(std::string
     return std::make_tuple(width, height, nbChanels, buffer);
 }
 
-std::string rawls::getCommentsRAWLS(std::string filename){
+std::string rawls_v1::getCommentsRAWLS(std::string filename){
 
     std::string comments;
 
