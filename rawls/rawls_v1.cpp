@@ -165,7 +165,7 @@ bool rawls_v1::saveAsRAWLS(unsigned width, unsigned height, unsigned nbChanels, 
         return false;
     }
 
-    std::cout << "Image is now saved as .rawls into " << outfileName << std::endl;
+    // std::cout << "Image is now saved as .rawls into " << outfileName << std::endl;
 
     return true;
 }
