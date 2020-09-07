@@ -327,10 +327,10 @@ std::tuple<unsigned, unsigned, unsigned, float*> rawls::getDataRAWLS(std::string
                 
                 buffer[nbChanels * width * y + nbChanels * x + j] = chanelValue; 
             } 
-
-            // go to next line
-            rf.get(c);
         }
+
+        // go to next line
+        rf.get(c);
     }
 
     rf.close();
