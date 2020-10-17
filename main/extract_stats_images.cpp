@@ -110,12 +110,12 @@ float getEstimator(std::string estimator, std::vector<float> values) {
 
         // Now calculate the sum of pow 2
         auto order2_func = [&mean, &size](float accumulator, const float& val) {
-            return accumulator + pow(val - mean, 2);
+            return accumulator + pow(val - pow(mean, 2), 2);
         };
 
         float order2 = std::accumulate(values.begin(), values.end(), 0.0, order2_func);
 
-        return size * (order4 / pow(order2, 2));
+        return size * (order4 / order2);
     }
 
     // by default
