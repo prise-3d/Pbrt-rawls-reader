@@ -16,7 +16,7 @@ def main():
 
     p_folder = args.folder
     p_nfiles = args.nfiles
-    p_est = args.estimators
+    p_est = args.est
     x_tile, y_tile = list(map(int, args.tiles.split(',')))
     p_output = args.output
 
