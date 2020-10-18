@@ -34,7 +34,11 @@ def main():
                     os.makedirs(output_folder)
 
                 outfilename = os.path.join(output_folder, scene + '_10000.rawls')
-                os.system('./build/main/extract_stats_images --folder {0} --bwidth {1} --bheight {2} --outfile {3} --estimator {4}'.format(scene_path, x_tile, y_tile, est, outfilename))
+
+                if not os.path.exists(outfilename):
+                    os.system('./build/main/extract_stats_images --folder {0} --bwidth {1} --bheight {2} --outfile {3} --estimator {4}'.format(scene_path, x_tile, y_tile, est, outfilename))
+                else:
+                    print('Already generated')
 
 
 
