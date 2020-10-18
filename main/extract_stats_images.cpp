@@ -87,35 +87,29 @@ float getEstimator(std::string estimator, std::vector<float> values) {
         float std = getEstimator("std", values);
 
         // Now calculate the sum of pow 3
-        auto order3_func = [&mean, &size](float accumulator, const float& val) {
-            return accumulator + pow(val - mean, 3);
+        auto order3_func = [&mean, &std](float accumulator, const float& val) {
+            return accumulator + pow((val - mean) / std, 3);
         };
 
         float order3 = std::accumulate(values.begin(), values.end(), 0.0, order3_func);
 
-        return order3 / ((size -1 ) * pow(std, 3));
+        return order3 / size;
 
     } else if (estimator == "kurtosis") {
         
         unsigned size = values.size();
 
         float mean = getEstimator("mean", values);
+        float std = getEstimator("std", values);
 
         // Now calculate the sum of pow 4
-        auto order4_func = [&mean, &size](float accumulator, const float& val) {
-            return accumulator + pow(val - mean, 4);
+        auto order4_func = [&mean, &std](float accumulator, const float& val) {
+            return accumulator + pow((val - mean) / std, 4);
         };
 
         float order4 = std::accumulate(values.begin(), values.end(), 0.0, order4_func);
 
-        // Now calculate the sum of pow 2
-        auto order2_func = [&mean, &size](float accumulator, const float& val) {
-            return accumulator + pow(val - mean, 2);
-        };
-
-        float order2 = std::accumulate(values.begin(), values.end(), 0.0, order2_func);
-
-        return size * (order4 / pow(order2, 2));
+        return order4 / size;
 
     } else if (estimator == "mode") {
 
