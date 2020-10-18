@@ -7,7 +7,7 @@
 #include <tuple>
 #include <cmath>
 #include <numeric>  
-
+#include <map>
 #include <algorithm>
 #include <filesystem>
 
@@ -116,6 +116,49 @@ float getEstimator(std::string estimator, std::vector<float> values) {
         float order2 = std::accumulate(values.begin(), values.end(), 0.0, order2_func);
 
         return size * (order4 / order2);
+
+    } else if (estimator == "mode") {
+
+        std::vector<float> pvalues;
+
+        for (unsigned i = 0; i < values.size(); i++){
+            pvalues.push_back(roundf(values.at(i) * 100) / 100.0);
+        }
+
+        typedef std::map<float,unsigned int> CounterMap;
+        CounterMap counts;
+        for (int i = 0; i < pvalues.size(); ++i)
+        {
+            CounterMap::iterator it(counts.find(pvalues[i]));
+            if (it != counts.end()){
+                it->second++;   
+            } else {
+                counts[pvalues[i]] = 1;
+            }
+        }
+
+        // Create a map iterator and point to beginning of map
+        std::map<float, unsigned int>::iterator it = counts.begin();
+        unsigned noccurences = 0;
+        float modeValue = 0.;
+        // Iterate over the map using Iterator till end.
+        while (it != counts.end())
+        {
+            // Accessing KEY from element pointed by it.
+            float potentialMode = it->first;
+            // Accessing VALUE from element pointed by it.
+            unsigned count = it->second;
+
+            if (count > noccurences) {
+                noccurences = count;
+                modeValue = potentialMode;
+            }
+
+            // Increment the Iterator to point to next entry
+            it++;
+        }
+
+        return modeValue;
     }
 
     // by default
