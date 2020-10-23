@@ -9,6 +9,11 @@
 #include <filesystem>
 #include <regex>
 
+#include <bits/stdc++.h> 
+#include <iostream> 
+#include <sys/stat.h> 
+#include <sys/types.h> 
+
 void writeProgress(float progress, bool moveUp = false){
     int barWidth = 200;
 
@@ -86,6 +91,9 @@ int main(int argc, char *argv[]){
         }
     }
 
+    // create output directory
+    mkdir(outputFolder.c_str(), 0755);
+
     std::vector<std::string> imagesPath;
 
     for (const auto & entry : std::filesystem::directory_iterator(folderName)){
@@ -93,6 +101,11 @@ int main(int argc, char *argv[]){
         if (rawls::HasExtension(imageName, ".rawls") || rawls::HasExtension(imageName, ".rawls_20")){
             imagesPath.push_back(imageName);
         }
+    }
+
+    // check number of files
+    if (maxSamples > imagesPath.size()) {
+        maxSamples = imagesPath.size();
     }
 
     // sort or shuffle the images path
