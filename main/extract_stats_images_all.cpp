@@ -205,7 +205,12 @@ int main(int argc, char *argv[]){
     auto elements = split(folderName, '/');
     std::string sceneName = elements.at(elements.size() - 1);
 
-    mkdir((outputFolder + "/" + sceneName).c_str(), 0755);
+    for (int i = 0; i < estimators.size(); i++) {
+
+        mkdir((outputFolder + "/" + estimators[i]).c_str(), 0755);
+        mkdir((outputFolder + "/" + estimators[i] + "/" + sceneName).c_str(), 0755);
+    }
+
 
     // get all files path
     std::vector<std::string> imagesPath;
@@ -236,7 +241,7 @@ int main(int argc, char *argv[]){
 
     for (int i = 0; i < estimators.size(); i++) {
 
-        std::string outputFile = outputFolder + "/" + sceneName + "/" + sceneName + "_" + estimators[i] + ".rawls";
+        std::string outputFile = outputFolder + "/" + estimators[i] + "/" + sceneName + "/" + sceneName + ".rawls";
 
         std::ifstream ifile;
         ifile.open(outputFile);
