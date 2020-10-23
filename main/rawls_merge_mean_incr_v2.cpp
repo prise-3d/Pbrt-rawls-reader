@@ -147,7 +147,6 @@ int main(int argc, char *argv[]){
 
         double w1 = (double)i / (double)(i + 1.);
         double w2 = 1. / ((double)i + 1.);
-        std::cout << w1 << " - " << w2 << std::endl;
         
         for(unsigned y = 0; y < height; y++){
 
