@@ -182,6 +182,7 @@ int main(int argc, char *argv[]){
     std::vector<std::string> estimators = {"median", "var", "std", "skewness", "kurtosis", "mode"};
     unsigned blockHeight;
     unsigned blockWidth;
+    unsigned nfiles = 10000;
     std::string outputFolder;
 
     for (int i = 1; i < argc; ++i) {
@@ -193,6 +194,8 @@ int main(int argc, char *argv[]){
             blockWidth = atoi(argv[++i]);
         } else if (!strcmp(argv[i], "--output") || !strcmp(argv[i], "-output")) {
             outputFolder = argv[++i];
+        } else if (!strcmp(argv[i], "--nfiles") || !strcmp(argv[i], "-nfiles")) {
+            nfiles = atoi(argv[++i]);
         }
     }
 
@@ -203,6 +206,10 @@ int main(int argc, char *argv[]){
         if (rawls::HasExtension(imageName, ".rawls") || rawls::HasExtension(imageName, ".rawls_20")){
             imagesPath.push_back(imageName);
         }
+    }
+
+    if (imagesPath.size() != nfiles) {
+        return 0;
     }
 
     std::sort(imagesPath.begin(), imagesPath.end());
