@@ -199,6 +199,15 @@ int main(int argc, char *argv[]){
         }
     }
 
+    // create outputs directory
+    mkdir(outputFolder.c_str(), 0755);
+
+    auto elements = split(folderName, '/');
+    std::string sceneName = elements.at(elements.size() - 1);
+
+    mkdir((outputFolder + "/" + sceneName).c_str(), 0755);
+
+    // get all files path
     std::vector<std::string> imagesPath;
 
     for (const auto & entry : std::filesystem::directory_iterator(folderName)){
@@ -221,10 +230,27 @@ int main(int argc, char *argv[]){
     unsigned nbChanels = std::get<2>(data);
 
     std::vector<float*> outputBuffers;
+    std::vector<std::string> outputFiles;
+    std::vector<std::string> selectedEstimators;
     // new buffer size as new output buffer image (default 3 channels)
 
-    for (int i = 0; i < estimators.size(); i++)
-        outputBuffers.push_back(new float[outputHeight * outputWidth * nbChanels]);
+    for (int i = 0; i < estimators.size(); i++) {
+
+        std::string outputFile = outputFolder + "/" + sceneName + "/" + sceneName + "_" + estimators[i] + ".rawls";
+
+        std::ifstream ifile;
+        ifile.open(outputFile);
+        if(!ifile) {
+        
+            // create new buffer entry
+            selectedEstimators.push_back(estimators[i]);
+            outputFiles.push_back(outputFile);
+            outputBuffers.push_back(new float[outputHeight * outputWidth * nbChanels]);
+        
+        } else {
+            ifile.close();
+        }
+    }
 
     // get all tiles to apply
     unsigned nWidth = ceil(outputWidth / (float)blockWidth);
@@ -297,7 +323,7 @@ int main(int argc, char *argv[]){
         }
 
 
-        for (int i = 0; i < outputBuffers.size(); i++) {
+        for (int i = 0; i < outputFiles.size(); i++) {
         
             // extract stat and add predicted value into output buffer
             unsigned index = 0;
@@ -305,9 +331,9 @@ int main(int argc, char *argv[]){
             for (int y = tile.p1.y; y < tile.p2.y; ++y) {
                 for (int x = tile.p1.x; x < tile.p2.x; ++x) {
                     
-                    outputBuffers.at(i)[3 * (y * outputWidth + x) + 0] = getEstimator(estimators.at(i), rgbValues.at(index + 0));
-                    outputBuffers.at(i)[3 * (y * outputWidth + x) + 1] = getEstimator(estimators.at(i), rgbValues.at(index + 1));
-                    outputBuffers.at(i)[3 * (y * outputWidth + x) + 2] = getEstimator(estimators.at(i), rgbValues.at(index + 2));
+                    outputBuffers.at(i)[3 * (y * outputWidth + x) + 0] = getEstimator(selectedEstimators.at(i), rgbValues.at(index + 0));
+                    outputBuffers.at(i)[3 * (y * outputWidth + x) + 1] = getEstimator(selectedEstimators.at(i), rgbValues.at(index + 1));
+                    outputBuffers.at(i)[3 * (y * outputWidth + x) + 2] = getEstimator(selectedEstimators.at(i), rgbValues.at(index + 2));
 
                     index += 3;
                 }
@@ -318,26 +344,17 @@ int main(int argc, char *argv[]){
     // Save here new rawls image
     std::string comments = rawls::getCommentsRAWLS(imagesPath.at(0));
 
-    // create outputs directory
-    mkdir(outputFolder.c_str(), 0755);
-
-    auto elements = split(folderName, '/');
-    std::string sceneName = elements.at(elements.size() - 1);
-
-    mkdir((outputFolder + "/" + sceneName).c_str(), 0755);
-
-    for (int i = 0; i < outputBuffers.size(); i++) {
+    for (int i = 0; i < outputFiles.size(); i++) {
 
         // construct specific outfile name
-        std::string outputfile = outputFolder + "/" + sceneName + "/" + sceneName + "_" + estimators.at(i) + ".rawls";
-        bool success = rawls::saveAsRAWLS(outputWidth, outputHeight, nbChanels, comments, outputBuffers.at(i), outputfile);
+        bool success = rawls::saveAsRAWLS(outputWidth, outputHeight, nbChanels, comments, outputBuffers[i], outputFiles[i]);
 
         if (success) {
-            std::cout << "New image saved into " << outputfile << std::endl;
+            std::cout << "New image saved into " << outputFiles[i] << std::endl;
         }
         else
         {
-            std::cout << "Error while saving current image " << outputfile << std::endl;
+            std::cout << "Error while saving current image " << outputFiles[i] << std::endl;
         }
 
         delete outputBuffers[i];
