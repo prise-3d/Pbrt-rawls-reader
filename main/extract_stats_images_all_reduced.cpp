@@ -398,7 +398,7 @@ int main(int argc, char *argv[]){
             try {
                 
                 float* RGBpixels = rawls::getPixelsRAWLS(imagesPath.at(i));
-                std::cout << "Read image n°" << nsamples << " / " << nsamples << " for tile n°" << t_index << " / " << tiles.size() << std::endl;
+                std::cout << "Read image n°" << i << " / " << nsamples << " for tile n°" << t_index << " / " << tiles.size() << std::endl;
 
                 unsigned index = 0;
                 for (int y = tile.p1.y; y < tile.p2.y; ++y) {

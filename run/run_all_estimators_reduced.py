@@ -43,7 +43,7 @@ def main():
             if not all(checked_folder):
                 print(f'Extraction of estimators for {scene} scene')
                 t1 = time.time()
-                os.system('./build/main/extract_stats_images_all_reduced --folder {0} --bwidth {1} --bheight {2} --nfiles {3} --output {4}'.format(scene_path, x_tile, y_tile, p_nfiles, p_output))
+                print('./build/main/extract_stats_images_all_reduced --folder {0} --bwidth {1} --bheight {2} --nfiles {3} --output {4}'.format(scene_path, x_tile, y_tile, p_nfiles, p_output))
                 t2 = time.time()
                 delta = (t2 - t1)
                 print(f'Extraction for {scene}, took {delta}')

@@ -36,14 +36,21 @@ do
         filename=$folder$file
         filename_fixed=${filename//\/\//\/}
 
-        IFS='.' read -ra ADDR <<< "${file}"
 
+        IFS='/' read -ra ADDR <<< "${scene}"
+        folder=${ADDR[-1]}
+
+        # get output expected path
+        output_scene_path=$output_folder/$folder
+
+        
+        IFS='.' read -ra ADDR <<< "${file}"        
         filename_without_ext=${ADDR[0]}
         outfile="${filename_without_ext}.${ext}"
 
         # check if filename contains 
         if [[ "$file" == ${prefix}* ]]; then
-            ./main/rawls_convert --image ${filename_fixed} --outfile ${output_folder}/${outfile}
+            echo ./main/rawls_convert --image ${filename_fixed} --outfile ${output_scene_path}/${outfile}
         fi
     done 
   done

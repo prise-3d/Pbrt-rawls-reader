@@ -1,5 +1,6 @@
 import os
 import argparse
+import time
 
 def main():
 
@@ -37,7 +38,11 @@ def main():
             outfilename = os.path.join(output_folder, scene + '_10000.rawls')
 
             if not os.path.exists(outfilename):
+                t1 = time.time()
                 os.system('./build/main/extract_stats_images --folder {0} --bwidth {1} --bheight {2} --outfile {3} --estimator {4}'.format(scene_path, x_tile, y_tile, p_est, outfilename))
+                t2 = time.time()
+                delta = (t2 - t1)
+                print(f'Extraction for {scene}, took {delta}')
             else:
                 print('Already generated')
 
