@@ -50,7 +50,7 @@ do
 
         # check if filename contains 
         if [[ "$file" == ${prefix}* ]]; then
-            echo ./main/rawls_convert --image ${filename_fixed} --outfile ${output_scene_path}/${outfile}
+            ./build/main/rawls_convert --image ${filename_fixed} --outfile ${output_scene_path}/${outfile}
         fi
     done 
   done
