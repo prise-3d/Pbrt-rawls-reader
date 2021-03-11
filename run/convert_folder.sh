@@ -38,10 +38,10 @@ do
 
 
         IFS='/' read -ra ADDR <<< "${scene}"
-        folder=${ADDR[-1]}
+        scene_folder=${ADDR[-1]}
 
         # get output expected path
-        output_scene_path=$output_folder/$folder
+        output_scene_path=$output_folder/$scene_folder
 
         
         IFS='.' read -ra ADDR <<< "${file}"        
@@ -50,7 +50,7 @@ do
 
         # check if filename contains 
         if [[ "$file" == ${prefix}* ]]; then
-            ./build/main/rawls_convert --image ${filename_fixed} --outfile ${output_scene_path}/${outfile}
+            echo ./build/main/rawls_convert --image ${filename_fixed} --outfile ${output_scene_path}/${outfile}
         fi
     done 
   done
