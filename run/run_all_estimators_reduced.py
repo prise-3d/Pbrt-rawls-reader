@@ -4,12 +4,11 @@ import time
 
 def main():
 
-    estimators = ["median", "variance", "std", "skewness", "kurtosis", "mode"]
+    estimators = ["mean", "median", "var", "std", "skewness", "kurtosis", "mode"]
 
     parser = argparse.ArgumentParser("Run estimators reconstruction")
     parser.add_argument('--folder', type=str, help='folder with rawls scene data', required=True)
     parser.add_argument('--nfiles', type=int, help='expected number of rawls files', required=True)
-    parser.add_argument('--est', type=str, help='estimator to use', choices=estimators, required=True)
     parser.add_argument('--tiles', type=str, help='tiles size: 100,100', default="100,100")
     parser.add_argument('--output', type=str, help='output folder', required=True)
 
@@ -17,7 +16,6 @@ def main():
 
     p_folder = args.folder
     p_nfiles = args.nfiles
-    p_est = args.est
     x_tile, y_tile = list(map(int, args.tiles.split(',')))
     p_output = args.output
 
@@ -28,23 +26,29 @@ def main():
         nelements = len(os.listdir(scene_path))
 
         if nelements == p_nfiles:
-            print('Extraction of {0} estimator for {1} scene'.format(p_est, scene))
 
-            output_folder = os.path.join(p_output, p_est, scene)
+            # check all scene folder exists
+            checked_folder = []
 
-            if not os.path.exists(output_folder):
-                os.makedirs(output_folder)
+            for est in estimators:
+                output_folder = os.path.join(p_output, est, scene)
 
-            outfilename = os.path.join(output_folder, scene + '_10000.rawls')
+                if not os.path.exists(output_folder):
+                    os.makedirs(output_folder)
 
-            if not os.path.exists(outfilename):
+                outfilename = os.path.join(output_folder, scene + '.rawls')
+
+                checked_folder.append(os.path.exists(outfilename))
+
+            if not all(checked_folder):
+                print(f'Extraction of estimators for {scene} scene')
                 t1 = time.time()
-                os.system('./build/main/extract_stats_images --folder {0} --bwidth {1} --bheight {2} --outfile {3} --estimator {4}'.format(scene_path, x_tile, y_tile, p_est, outfilename))
+                print('./build/main/extract_stats_images_all_reduced --folder {0} --bwidth {1} --bheight {2} --nfiles {3} --output {4}'.format(scene_path, x_tile, y_tile, p_nfiles, p_output))
                 t2 = time.time()
                 delta = (t2 - t1)
                 print(f'Extraction for {scene}, took {delta}')
             else:
-                print('Already generated')
+                print(f'Estimators for {scene}, already generated')
 
 
 
