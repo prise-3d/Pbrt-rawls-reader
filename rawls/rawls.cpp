@@ -292,11 +292,8 @@ std::tuple<unsigned, unsigned, unsigned, float*> rawls::getDataRAWLS(std::string
             std::getline(rf, line); // avoid data size line
 
             rf.read((char *) &width, sizeof(unsigned));
-            rf.get(c);
             rf.read((char *) &height, sizeof(unsigned));
-            rf.get(c);
             rf.read((char *) &nbChanels, sizeof(unsigned));
-            rf.get(c);
         }
     }
 
