@@ -24,6 +24,10 @@ def main():
     while len(expected_index) < 6:
         expected_index = "0" + expected_index
 
+    output_index = ""
+    while len(output_index) < 6:
+        output_index = "0" + output_index
+
     images_path = glob.glob(f"{p_folder}/**/**/*{expected_index}.png")
 
     for img in sorted(images_path):
@@ -31,6 +35,7 @@ def main():
         # replace expected Samples value
         img_data = img.split('-')
         img_data[-2] = "S" + p_samples
+        img_data[-1] = output_index
 
         output_path = '-'.join(img_data)
 
