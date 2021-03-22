@@ -2,6 +2,7 @@ import os
 import argparse
 import glob
 
+
 def main():
 
     parser = argparse.ArgumentParser(description="Convert rawls file into png")
