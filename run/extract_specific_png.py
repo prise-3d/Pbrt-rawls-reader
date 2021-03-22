@@ -35,7 +35,7 @@ def main():
         # replace expected Samples value
         img_data = img.split('-')
         img_data[-2] = "S" + p_samples
-        img_data[-1] = output_index
+        img_data[-1] = output_index + ".png"
 
         output_path = '-'.join(img_data)
 
