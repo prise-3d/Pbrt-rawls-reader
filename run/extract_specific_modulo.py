@@ -8,7 +8,7 @@ def main():
     parser = argparse.ArgumentParser(description="Extract specific samples indices")
 
     parser.add_argument('--folder', type=str, help='folder with all rawls files', required=True)
-    parser.add_argument('--modulo', type=str, help='every image to take', required=True)
+    parser.add_argument('--modulo', type=int, help='every image to take', required=True)
     parser.add_argument('--output', type=str, help='folder with all png files', required=True)
 
     args = parser.parse_args()
