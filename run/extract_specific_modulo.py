@@ -19,13 +19,9 @@ def main():
 
     images_path = glob.glob(f"{p_folder}/**/**/*.rawls")
 
-    for img in sorted(images_path):
+    for i, img in enumerate(sorted(images_path)):
 
-        # replace expected Samples value
-        img_data = img.split('-')
-        index_img = int(img_data[-1].split('.')[0])
-
-        if (index_img % p_modulo) - 1 == 0:
+        if ((i + 1) % p_modulo) == 0:
 
             output_path = img.replace(p_folder, p_output)
             output_folder, _ = os.path.split(output_path)
@@ -35,10 +31,9 @@ def main():
             
             if not os.path.exists(output_path):
                 os.system(f'cp {img} {output_path}')
+                print(f'Copy of {img}')
             else:
                 print(f'{output_path} already exists')
-        else:
-            print(f'Not considered: {img}')
     
 
 if __name__ == "__main__":
