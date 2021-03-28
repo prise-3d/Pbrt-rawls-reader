@@ -27,7 +27,7 @@ def main():
 
         if (index_img % p_modulo) - 1 == 0:
 
-            output_path = output_path.replace(p_folder, p_output)
+            output_path = img.replace(p_folder, p_output)
             output_folder, _ = os.path.split(output_path)
 
             if not os.path.exists(output_folder):
