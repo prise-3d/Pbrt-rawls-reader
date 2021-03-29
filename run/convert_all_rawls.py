@@ -2,6 +2,7 @@ import os
 import argparse
 import glob
 
+
 def main():
 
     parser = argparse.ArgumentParser(description="Convert rawls file into png")
@@ -26,7 +27,10 @@ def main():
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
         
-        os.system(f'./build/main/rawls_convert --image {img} --outfile {output_path}')
+        if not os.path.exists(output_path):
+            os.system(f'./build/main/rawls_convert --image {img} --outfile {output_path}')
+        else:
+            print(f'{output_path} already exists')
     
 
 if __name__ == "__main__":
