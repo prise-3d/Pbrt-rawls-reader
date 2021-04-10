@@ -9,6 +9,11 @@
 #include <filesystem>
 #include <regex>
 
+#include <bits/stdc++.h> 
+#include <iostream> 
+#include <sys/stat.h> 
+#include <sys/types.h> 
+
 void writeProgress(float progress, bool moveUp = false){
     int barWidth = 200;
 
@@ -86,6 +91,9 @@ int main(int argc, char *argv[]){
         }
     }
 
+    // create output directory
+    mkdir(outputFolder.c_str(), 0755);
+
     std::vector<std::string> imagesPath;
 
     for (const auto & entry : std::filesystem::directory_iterator(folderName)){
@@ -93,6 +101,11 @@ int main(int argc, char *argv[]){
         if (rawls::HasExtension(imageName, ".rawls") || rawls::HasExtension(imageName, ".rawls_20")){
             imagesPath.push_back(imageName);
         }
+    }
+
+    // check number of files
+    if (maxSamples > imagesPath.size()) {
+        maxSamples = imagesPath.size();
     }
 
     // sort or shuffle the images path
@@ -137,13 +150,17 @@ int main(int argc, char *argv[]){
         comments = rawls::getCommentsRAWLS(imagesPath.at(0));
     }
 
-    for (unsigned i = 0; i < maxSamples; i++){
+    for (int i = 0; i < maxSamples; i++){
 
         unsigned currentSample = i + 1;
 
         // read into folder all `.rawls` file and merge pixels values
         float* buffer = rawls::getPixelsRAWLS(imagesPath.at(i));
 
+
+        double w1 = (double)i / (double)(i + 1.);
+        double w2 = 1. / ((double)i + 1.);
+        
         for(unsigned y = 0; y < height; y++){
 
             for(unsigned x = 0; x < width; x++) {
@@ -151,7 +168,9 @@ int main(int argc, char *argv[]){
                 for(unsigned j = 0; j < nbChanels; j++){
                     
                     float value = buffer[nbChanels * width * y + nbChanels * x + j];
-                    outputBuffer[nbChanels * width * y + nbChanels * x + j] +=  value;
+                    //outputBuffer[nbChanels * width * y + nbChanels * x + j] +=  value;
+
+                    outputBuffer[nbChanels * width * y + nbChanels * x + j] = outputBuffer[nbChanels * width * y + nbChanels * x + j] * w1 + value * w2;
                 }
             }
         }
@@ -161,7 +180,7 @@ int main(int argc, char *argv[]){
 
              // mean all samples values by number of samples used
             for (int j = 0; j < height * width * nbChanels; j++){
-                outputStepBuffer[j] = outputBuffer[j] / currentSample;
+                outputStepBuffer[j] = outputBuffer[j];// / currentSample;
             }
 
             // add suffix with `5` digits
@@ -174,6 +193,7 @@ int main(int argc, char *argv[]){
             // build output path of image
             std::string outfileName = outputFolder + "/" + prefixImageName + "_" + suffix + "." + imageExtension;
             outfileName = std::regex_replace(outfileName, std::regex("\\//"), "/"); // fix path 
+            std::cout << "Saved image into " << outfileName << std::endl;
 
             // save the expected `step` image using built outpath
             saveCurrentImage(width, height, nbChanels, outputStepBuffer, outfileName, comments);

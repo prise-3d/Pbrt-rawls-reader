@@ -19,9 +19,11 @@ def main():
 
     images_path = glob.glob(f"{p_folder}/**/**/*.rawls")
 
-    for i, img in enumerate(sorted(images_path)):
+    for img in sorted(images_path):
 
-        if ((i + 1) % p_modulo) == 0:
+        img_index = int(img.split('-').split('.')[0])
+
+        if ((img_index + 1) % p_modulo) == 0:
 
             output_path = img.replace(p_folder, p_output)
             output_folder, _ = os.path.split(output_path)
