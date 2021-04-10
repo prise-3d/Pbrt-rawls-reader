@@ -29,11 +29,11 @@ make
 
 Convert the `.rawls` image format into `.ppm` 
 ```
-./main/rawls_reader --image ../path/to/image.rawls --outfile image.ppm
+./main/rawls_convert --image ../path/to/image.rawls --outfile image.ppm
 ```
 
 
 Merge `.rawls` images samples
 ```
-./main/rawls_merge --folder ../path/to/images --samples 100 --random 0 --outfile image.png
+./main/rawls_merge_mean --folder ../path/to/images --samples 100 --random 0 --outfile image.png
 ```
