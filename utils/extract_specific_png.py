@@ -33,13 +33,13 @@ def main():
     for img in sorted(images_path):
 
         # replace expected Samples value
-        img_data = img.split('-')
+        img_data = img.split('/')[-1].split('-')
         img_data[-2] = "S" + p_samples
         img_data[-1] = output_index + ".png"
 
         output_path = '-'.join(img_data)
 
-        output_path = output_path.replace(p_folder, p_output)
+        output_path = os.path.join(p_output, img.split('/')[-2], output_path)
         output_folder, _ = os.path.split(output_path)
 
         if not os.path.exists(output_folder):
