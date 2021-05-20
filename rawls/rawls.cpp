@@ -180,7 +180,7 @@ float* rawls::getPixelsRAWLS(std::string filename){
     height = std::get<1>(dimensions);
     nbChanels = std::get<2>(dimensions);
 
-    std::ifstream rf(filename, std::ios::out | std::ios::binary);
+    std::ifstream rf(filename, std::ios::binary);
 
     if(!rf) {
       std::cout << "Cannot open file!" << std::endl;
@@ -233,7 +233,7 @@ float* rawls::getPixelsRAWLS(std::string filename){
 
 std::tuple<unsigned, unsigned, unsigned> rawls::getDimensionsRAWLS(std::string filename){
 
-    std::ifstream rf(filename, std::ios::out | std::ios::binary);
+    std::ifstream rf(filename, std::ios::binary);
 
     if(!rf) {
       std::cout << "Cannot open file!" << std::endl;
@@ -272,7 +272,7 @@ std::tuple<unsigned, unsigned, unsigned> rawls::getDimensionsRAWLS(std::string f
 std::tuple<unsigned, unsigned, unsigned, float*> rawls::getDataRAWLS(std::string filename){
 
     // only one read buffer used for the whole function
-    std::ifstream rf(filename, std::ios::out | std::ios::binary);
+    std::ifstream rf(filename, std::ios::binary);
 
     if(!rf) {
       std::cout << "Cannot open file!" << std::endl;
@@ -344,7 +344,7 @@ std::string rawls::getCommentsRAWLS(std::string filename){
     std::string comments;
 
     // only one read buffer used for the whole function
-    std::ifstream rf(filename, std::ios::out | std::ios::binary);
+    std::ifstream rf(filename, std::ios::binary);
 
     if(!rf) {
       std::cout << "Cannot open file!" << std::endl;
