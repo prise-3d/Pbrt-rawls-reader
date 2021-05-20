@@ -25,7 +25,7 @@ struct Tile {
 
 
 void writeProgress(float progress, bool moveUp = false){
-    int barWidth = 200;
+    int barWidth = 150;
 
     if (moveUp){
         // move up line

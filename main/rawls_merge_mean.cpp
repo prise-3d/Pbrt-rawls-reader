@@ -9,7 +9,7 @@
 #include <filesystem>
 
 void writeProgress(float progress){
-    int barWidth = 200;
+    int barWidth = 150;
 
     std::cout << "[";
     int pos = barWidth * progress;

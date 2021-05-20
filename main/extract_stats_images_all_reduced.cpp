@@ -42,7 +42,7 @@ std::vector<std::string> split(const std::string& s, char delimiter)
 }
 
 void writeProgress(float progress, bool moveUp = false){
-    int barWidth = 200;
+    int barWidth = 150;
 
     if (moveUp){
         // move up line
